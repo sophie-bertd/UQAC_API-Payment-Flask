@@ -1,6 +1,6 @@
 from peewee import *
 import os 
-import json
+import requests
 
 def get_db():
     database_path = os.path.join("instance", "database.sqlite")
@@ -11,11 +11,27 @@ def close_db():
     db.close()
 
 def init_db() : 
-# A REVOIR SI ON PEUT FAIRE MIEUX
     if os.path.exists("instance/database.sqlite"):
         os.remove("instance/database.sqlite")
     with get_db() as db:
         db.create_tables([Product, ShippingInformation, CreditCard, Transaction, Order])
+
+        url = "http://dimprojetu.uqac.ca/~jgnault/shops/products/"
+        response = requests.get(url)
+        data = response.json()
+
+        products = data['products']
+        for product in products:
+            product_save = Product.create(
+                name=product['name'],
+                description=product['description'],
+                price=product['price'],
+                in_stock=product['in_stock'],
+                id=product['id'],
+                weight=product['weight'],
+                image=product['image']
+            )
+            product_save.save()
 
 class Product(Model):
     id = IntegerField(primary_key=True)
