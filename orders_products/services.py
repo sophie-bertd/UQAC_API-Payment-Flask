@@ -1,4 +1,6 @@
 from orders_products.models import init_db, Product, ShippingInformation, CreditCard, Transaction, Order
+import requests 
+import json
 
 class OrderProductsServices(object) : 
     
@@ -22,6 +24,8 @@ class OrderProductsServices(object) :
             return None
         
         total_price = product_db.price * product['quantity']
+
+        # REVOIR CALCUL SHIPPING PRICE
 
         if product_db.weight < 500 :
             shipping_price = 5 + total_price
@@ -68,16 +72,22 @@ class OrderProductsServices(object) :
         return Order.get_order_by_id(order_id)
     
     @classmethod
-    def payment_order_from_post_data(cls, order_id, post_data):
+    def api_payment(cls, url, data):
+        response = requests.post(url, json=data)
+        return response
+
+    @classmethod
+    def payment_order_to_api(cls, order_id, post_data) : 
         if not post_data['credit_card'] :
             return None
         
         order = Order.get_order_by_id(order_id)
-        if order.email is None or order.shipping_information is None :
+
+        if order["email"] is None or order["shipping_information"] is None :
             # Ajouter message d'erreur
             return None
         
-        if order.paid :
+        if order["paid"] :
             # Ajouter message d'erreur
             return None
         
@@ -85,7 +95,36 @@ class OrderProductsServices(object) :
         if not credit_card['number'] or not credit_card['expiration_year'] or not credit_card['cvv'] or not credit_card['name'] or not credit_card['expiration_month']:
             # Missing fields
             return None
+
+        amount_charged = order["total_price"] + order["shipping_price"]
+        amount_charged = float(amount_charged)
+
+        data = {
+            "amount_charged": amount_charged,
+            "credit_card": {
+                "number": credit_card["number"],
+                "expiration_year": credit_card["expiration_year"],
+                "expiration_month": credit_card["expiration_month"],
+                "cvv": credit_card["cvv"],
+                "name": credit_card["name"]
+            }
+        }
+
+        response = OrderProductsServices.api_payment("http://dimprojetu.uqac.ca/~jgnault/shops/pay/",data)
+
+        if response.status_code != 200 :
+            return None
         
+        body_response = response.text
+        body_response = json.loads(body_response)
+        body_transaction = body_response['transaction']
+        transaction = Transaction.create(
+            id=body_transaction['id'],
+            success=body_transaction['success'],
+            amount_charged=body_transaction['amount_charged']
+        )
+        transaction.save()
+
         credit_card = CreditCard.create(
             number=credit_card['number'],
             expiration_year=credit_card['expiration_year'],
@@ -96,6 +135,9 @@ class OrderProductsServices(object) :
         credit_card.save()
 
         Order.update(credit_card=credit_card).where(id == order_id).execute()
+        Order.update(transaction=transaction).where(id == order_id).execute()
+        Order.update(paid=True).where(id == order_id).execute()
+
         return Order.get_order_by_id(order_id)
     
     @classmethod

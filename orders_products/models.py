@@ -75,7 +75,7 @@ class CreditCard(Model):
         database = get_db()
 
 class Transaction(Model):
-    id = CharField()
+    id = CharField(primary_key=True)
     success = BooleanField()
     amount_charged = DecimalField()
 
@@ -83,7 +83,6 @@ class Transaction(Model):
         database = get_db()
 
 class Order(Model):
-    # total_price = product.price * quantity
     id = AutoField()
     total_price = DecimalField()
     email = CharField(null=True)
@@ -99,25 +98,6 @@ class Order(Model):
 
     class Meta:
         database = get_db()
-
-    # def save(self, *args, **kwargs):
-    #     product = Product.get_product_by_id(self.product_id.id)
-    #     total_price = product.price * self.quantity
-    #     self.update(total_price=total_price).where(self.id == self.id).execute()
-
-    #     if product.weight < 500 :
-    #         shipping_price = 5 + total_price
-    #         self.update(shipping_price=shipping_price).where(self.id == self.id).execute()
-
-    #     elif product.weight < 2000 :
-    #         shipping_price = 10 + total_price
-    #         self.update(shipping_price=shipping_price).where(self.id == self.id).execute()
-
-    #     else :
-    #         shipping_price = 25 + total_price
-    #         self.update(shipping_price=shipping_price).where(self.id == self.id).execute()
-
-    #     return super().save(*args, **kwargs)
 
     @classmethod
     def get_order_by_id(cls, order_id):
@@ -137,14 +117,34 @@ class Order(Model):
         else:
             shipping_information = None
 
+        if order.credit_card is not None:
+            credit_card = {
+                "name": order.credit_card.name,
+                "number": order.credit_card.number,
+                "expiration_year": order.credit_card.expiration_year,
+                "expiration_month": order.credit_card.expiration_month,
+                "cvv": order.credit_card.cvv
+            }
+        else:
+            credit_card = None
+
+        if order.transaction is not None:
+            transaction = {
+                "id": order.transaction.id,
+                "success": order.transaction.success,
+                "amount_charged": order.transaction.amount_charged
+            }
+        else:
+            transaction = None
+
         order =  {
                     "id": order.id,
                     "total_price": order.total_price,
                     "email": order.email,
-                    "credit_card": order.credit_card,
+                    "credit_card": credit_card,
                     "shipping_information": shipping_information,
                     "paid": order.paid,
-                    "transaction": order.transaction,
+                    "transaction": transaction,
                     "product": 
                         {
                             "id": order.product_id.id,

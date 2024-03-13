@@ -84,34 +84,38 @@ def create_app(initial_config=None):
             return abort(404)
         
         body = request.get_json()
-        body = body["order"]
-        if body["total_price"] != None or body["transaction"] != None or body["paid"] != None or body["product"] != None or body["shipping_price"] != None or body["id"] != None : 
-            return abort(404)
+        if body.keys() == {"order"} : 
+            body = body["order"]
+            if body.keys() != {"shipping_information", "email"} :
+                return abort(404)
+            
+            if body["shipping_information"] != None or body["email"] != None :
+                res = OrderProductsServices.update_from_post_data(order_id, body)
+
+                if res is None:
+                    # Missing fields
+                    return abort(422)
+                else : 
+                # Ajouter le code 302 pour la redirection
+                    return redirect(url_for('get_order', order_id=order_id))
+                
+            else :
+                # Vérifier erreur
+                return abort(404)
         
-        if body["shipping_information"] != None or body["email"] != None :
-            res = OrderProductsServices.update_from_post_data(order_id, body)
+        elif body.keys() == {"credit_card"} :
+
+            res = OrderProductsServices.payment_order_to_api(order_id, body)
 
             if res is None:
-                # Missing fields
-                return abort(422)
-            else : 
-            # Ajouter le code 302 pour la redirection
-                return redirect(url_for('get_order', order_id=order_id))
-        
-        elif body["credit_card"] != None :
-            res = OrderProductsServices.payment_order_from_post_data(order_id, body)
-
-            if res is None:
-                # Missing fields
+                # Missing fields / à voir
                 return abort(422)
             
             # Ajouter le code 302 pour la redirection
             return redirect(url_for('get_order', order_id=order_id))
-    
-    def api_payment(url="http://dimprojetu.uqac.ca/~jgnault/shops/pay/"):
-        response = requests.post(url)
-        data = response.json()
-        return data
+        
+        else :
+            return abort(404)
   
     # @app.error_handler_spec(None, 422)
     # def unprocessable_entity(error):
