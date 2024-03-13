@@ -6,35 +6,33 @@ class OrderProductsServices(object) :
     
     @classmethod
     def create_order_from_post_data(cls, post_data):
+        if post_data.keys() != {'product'}:
+            return 0
         product = post_data['product']
-        if not product :
-            return None
         
-        if not product['id']:
-            return None
-        if not product['quantity']:
-            return None
+        if product.keys() != {'id', 'quantity'}:
+            return 0
         if product['quantity'] < 1:
-            return None
+            return 0
         
         product_db = Product.get_product_by_id(product['id'])
+        if product_db is None:
+            return 1
         is_product_in_stock = product_db.in_stock
 
         if not is_product_in_stock:
-            return None
+            return 2
         
         total_price = product_db.price * product['quantity']
 
-        # REVOIR CALCUL SHIPPING PRICE
-
         if product_db.weight < 500 :
-            shipping_price = 5 + total_price
+            shipping_price = 5
 
         elif product_db.weight < 2000 :
-            shipping_price = 10 + total_price
+            shipping_price = 10 
 
         else :
-            shipping_price = 25 + total_price
+            shipping_price = 25 
 
         order = Order.create(
             product_id=product['id'],
@@ -78,23 +76,19 @@ class OrderProductsServices(object) :
 
     @classmethod
     def payment_order_to_api(cls, order_id, post_data) : 
-        if not post_data['credit_card'] :
-            return None
-        
         order = Order.get_order_by_id(order_id)
 
         if order["email"] is None or order["shipping_information"] is None :
-            # Ajouter message d'erreur
-            return None
+            return 0
         
         if order["paid"] :
-            # Ajouter message d'erreur
-            return None
+            return 1
+        
         
         credit_card = post_data['credit_card']
         if not credit_card['number'] or not credit_card['expiration_year'] or not credit_card['cvv'] or not credit_card['name'] or not credit_card['expiration_month']:
             # Missing fields
-            return None
+            return 2
 
         amount_charged = order["total_price"] + order["shipping_price"]
         amount_charged = float(amount_charged)
@@ -113,7 +107,7 @@ class OrderProductsServices(object) :
         response = OrderProductsServices.api_payment("http://dimprojetu.uqac.ca/~jgnault/shops/pay/",data)
 
         if response.status_code != 200 :
-            return None
+            return response 
         
         body_response = response.text
         body_response = json.loads(body_response)
@@ -139,19 +133,3 @@ class OrderProductsServices(object) :
         Order.update(paid=True).where(id == order_id).execute()
 
         return Order.get_order_by_id(order_id)
-    
-    @classmethod
-    def init_db_with_api(cls, products):
-        products = products['products']
-        for product in products:
-            product_save = Product.create(
-                name=product['name'],
-                description=product['description'],
-                price=product['price'],
-                in_stock=product['in_stock'],
-                id=product['id'],
-                weight=product['weight'],
-                image=product['image']
-            )
-            product_save.save()
-        return True
