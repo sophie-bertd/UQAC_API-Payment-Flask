@@ -3,4 +3,4 @@ from .model import Product
 
 def index():
     products = Product.get_products()
-    return render_template('index.html', products=products)
+    return render_template('../templates/index.html', products=products)
