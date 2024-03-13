@@ -1,11 +1,15 @@
 import os 
 
-from flask import Flask, request, redirect, url_for, abort
+from flask import Flask, request, redirect, url_for, abort, jsonify
 import requests 
 
 from orders_products.models import get_db, init_db, Product, ShippingInformation, CreditCard, Transaction, Order
 from orders_products.services import OrderProductsServices
-from orders_products import views
+from orders_products import view
+
+from peewee import * 
+
+import json
 
 def create_app(initial_config=None):
     # --------------------- REGLER LE PROBLEME DE LA BASE DE DONNEES ---------------------
@@ -21,7 +25,14 @@ def create_app(initial_config=None):
     except OSError:
         pass
     init_db()
-    api_products()
+
+    def api_products(url):
+        response = requests.get(url)
+        data = response.json()
+        OrderProductsServices.init_db_with_api(data)
+
+    url = "http://dimprojetu.uqac.ca/~jgnault/shops/products/"
+    api_products(url)
 
     @app.before_request
     def before_request():
@@ -37,18 +48,26 @@ def create_app(initial_config=None):
 
     @app.route('/', methods=['GET'])
     def index():
-        products = Product.get_products()
-        return products
-        # if products:
-        #     return views.index(products)
-        # else:
-        #     return views.index_empty()
-
+        # view.index()
+        list_products = Product.get_products()
+        list_products = {
+            "products": list_products
+        }
+        return jsonify(list_products)
+    
+    @app.route('/order/<int:order_id>', methods=['GET'])
+    def get_order(order_id):
+        order = Order.get_order_by_id(order_id)
+        if not order:
+            return abort(404)
+        return jsonify(order)         
+        
     @app.route('/order', methods=['POST'])
     def post_order():
-        order = OrderProductsServices.create_order_from_post_data(request.form)
+        order = OrderProductsServices.create_order_from_post_data(request.get_json())
         if order is None:
             # Missing fields
+            # return {"error": "Invalid data provided"}, 400
             return abort(422)
         
         if not order:
@@ -56,44 +75,43 @@ def create_app(initial_config=None):
             return abort(422)
 
         # Ajouter le code 302 pour la redirection
-        return redirect(url_for('order', order_id=order.id))
-
-
-    @app.route('/order/<int:order_id>', methods=['GET'])
-    def get_order(order_id):
-        order = Order.get_order_by_id(order_id)
-        if not order:
-            return abort(404)
-
-        return views.view_order(order)
+        return redirect(url_for('get_order', order_id=order.id))
     
     @app.route('/order/<int:order_id>', methods=['PUT'])
     def put_order(order_id):
         order = Order.get_order_by_id(order_id)
         if not order:
             return abort(404)
+        
+        body = request.get_json()
+        body = body["order"]
+        if body["total_price"] != None or body["transaction"] != None or body["paid"] != None or body["product"] != None or body["shipping_price"] != None or body["id"] != None : 
+            return abort(404)
+        
+        if body["shipping_information"] != None or body["email"] != None :
+            res = OrderProductsServices.update_from_post_data(order_id, body)
 
-        res = OrderProductsServices.update_from_post_data(order_id, request.form)
-        if res is None:
-            # Missing fields
-            return abort(422)
+            if res is None:
+                # Missing fields
+                return abort(422)
+            else : 
+            # Ajouter le code 302 pour la redirection
+                return redirect(url_for('get_order', order_id=order_id))
+        
+        elif body["credit_card"] != None :
+            res = OrderProductsServices.payment_order_from_post_data(order_id, body)
 
-    # CARTE DE CREDIT
-
-    # @app.route('/shops/pay', methods=['POST'])
-    # # TODO
-
-    @app.route('/api_products', methods=['GET'])
-    def api_products():
-        url = "http://dimprojetu.uqac.ca/~jgnault/shops/products/"
-        response = requests.get(url)
-
-        data = response.json()
-        OrderProductsServices.init_db_with_api(data)
-
-        return redirect(url_for('index'))   
+            if res is None:
+                # Missing fields
+                return abort(422)
+            
+            # Ajouter le code 302 pour la redirection
+            return redirect(url_for('get_order', order_id=order_id))
     
-    # @app.route('/api_payment', methods=['POST'])
+    def api_payment(url="http://dimprojetu.uqac.ca/~jgnault/shops/pay/"):
+        response = requests.post(url)
+        data = response.json()
+        return data
   
     # @app.error_handler_spec(None, 422)
     # def unprocessable_entity(error):
