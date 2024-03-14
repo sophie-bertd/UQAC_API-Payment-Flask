@@ -24,11 +24,6 @@ def app():
 def client(app):
     return app.test_client()
 
-@pytest.fixture
-def firefox_options(request, firefox_options):
-    firefox_options.add_argument('--headless')
-    return firefox_options
-
 @pytest.fixture(scope="function")
 def db():
     test_db = SqliteDatabase(":memory:")
