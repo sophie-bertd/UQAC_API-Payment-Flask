@@ -1,13 +1,13 @@
 import os 
 
-from flask import Flask, request, redirect, url_for, jsonify 
-import requests
+from flask import Flask, request, redirect, url_for, jsonify, abort
 
 from orders_products.models import get_db, init_db, Product, ShippingInformation, CreditCard, Transaction, Order
 from orders_products.services import OrderProductsServices
 from orders_products import view
 
 from peewee import * 
+import json
 
 def create_app(initial_config=None):
     app = Flask("orders_products", instance_relative_config=True, template_folder="../templates", static_folder="../static")
@@ -145,7 +145,7 @@ def create_app(initial_config=None):
                         }
                     }, 422
                 else : 
-                    return redirect(url_for('get_order', order_id=order_id))
+                    return jsonify(success=True)
         
         elif body.keys() == {"credit_card"} :
 
@@ -181,10 +181,12 @@ def create_app(initial_config=None):
                         }
                 }, 422
             
-            elif res.status_code != 200 :
-                return res 
+            elif res.keys() == {"error"} : 
+                response = res.text 
+                response = json.loads(response)
+                return response , res.status_code
             
-            return redirect(url_for('get_order', order_id=order_id))
+            return jsonify(success=True)
         
         else :
             return {
