@@ -79,7 +79,8 @@ $(document).ready(() => {
         $(this).text().split(" - ")[1].replace("$", "").split(" ")[0]
       );
       const quantity = parseFloat($(this).attr("data-quantity"));
-      total += price * quantity;
+      // total += price * quantity;
+      total += price * currentProductQuantity;
     });
     $(".cart-total").text(`Total: $${total.toFixed(2)}`);
   }

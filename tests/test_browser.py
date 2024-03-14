@@ -39,4 +39,4 @@ class TestBrowser(object):
         el_cart_toggle.click()
 
         el_cart_sidebar = wait.until(EC.visibility_of_element_located((By.ID, 'cartSidebar')))
-        assert "open" in el_cart_sidebar.get_attribute("class")
+        assert "show" in el_cart_sidebar.get_attribute("class")
