@@ -84,7 +84,6 @@ class OrderProductsServices(object) :
         if order["paid"] :
             return 1
         
-        
         credit_card = post_data['credit_card']
         if not credit_card['number'] or not credit_card['expiration_year'] or not credit_card['cvv'] or not credit_card['name'] or not credit_card['expiration_month']:
             # Missing fields
@@ -107,7 +106,7 @@ class OrderProductsServices(object) :
         response = OrderProductsServices.api_payment("http://dimprojetu.uqac.ca/~jgnault/shops/pay/",data)
 
         if response.status_code != 200 :
-            return response 
+            return response
         
         body_response = response.text
         body_response = json.loads(body_response)

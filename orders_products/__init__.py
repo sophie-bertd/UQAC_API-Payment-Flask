@@ -181,7 +181,7 @@ def create_app(initial_config=None):
                         }
                 }, 422
             
-            elif res.keys() == {"error"} : 
+            if type(res) == Order :  
                 response = res.text 
                 response = json.loads(response)
                 return response , res.status_code
