@@ -1,4 +1,5 @@
 $(document).ready(() => {
+  let isFirstProductAdded = false;
   let order_id = null;
   let product_id = null;
   let currentProductQuantity = 0;
@@ -12,6 +13,11 @@ $(document).ready(() => {
   });
 
   $(".addToCart").click(function () {
+    if (!isFirstProductAdded) {
+      $(".addToCart").not(this).prop("disabled", true);
+      isFirstProductAdded = true;
+    }
+
     currentProductQuantity += 1;
     product_id = $(this).closest(".col-md-4").find(".card").data("product-id");
 
@@ -156,8 +162,8 @@ $(document).ready(() => {
         credit_card: {
           name: $("#creditCardName").val(),
           number: $("#creditCardNumber").val(),
-          expiration_year: parseInt($("#expirationYear").val()),
-          expiration_month: parseInt($("#expirationMonth").val()),
+          expiration_year: parseInt($("#creditCardYear").val()),
+          expiration_month: parseInt($("#creditCardMonth").val()),
           cvv: $("#cvv").val(),
         },
       }),
