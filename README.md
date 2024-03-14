@@ -65,7 +65,7 @@ Le projet consiste à développer une application Web responsable de prendre des
 - pytest-cov 4.1.0
 - selenium 4.1.0
 
-Utilisation de la librairie _request_ à la place de _urllib_ pour l'API.
+Utilisation de la librairie _requests_ à la place de _urllib_ pour l'API.
 
 ##
 
@@ -112,5 +112,7 @@ python -m pytest --cov-report=html --cov=orders_products
 ![alt text](./img/shipping.png)
 
 ![alt text](./img/payment.png)
+
+![alt text](./img/order_success.png)
 
 ![alt text](./img/order_failed.png)
