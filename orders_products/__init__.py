@@ -151,7 +151,7 @@ def create_app(initial_config=None):
 
             res = OrderProductsServices.payment_order_to_api(order_id, body)
 
-            if res == 0:
+            if res["code"] == 0:
                 return {
                         "errors": {
                             "order": {
@@ -161,7 +161,7 @@ def create_app(initial_config=None):
                         }
                 }, 422
             
-            elif res == 1:
+            elif res["code"] == 1:
                 return {
                         "errors": {
                             "order": {
@@ -171,7 +171,7 @@ def create_app(initial_config=None):
                         }
                 }, 422
             
-            elif res == 2:
+            elif res["code"] == 2:
                 return {
                         "errors": {
                             "order": {
@@ -181,10 +181,10 @@ def create_app(initial_config=None):
                         }
                 }, 422
             
-            if type(res) == Order :  
-                response = res.text 
+            if res["code"] == 3:  
+                response = res["data"].text 
                 response = json.loads(response)
-                return response , res.status_code
+                return response , res["data"].status_code
             
             return jsonify(success=True)
         

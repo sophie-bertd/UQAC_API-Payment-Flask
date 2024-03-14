@@ -79,15 +79,15 @@ class OrderProductsServices(object) :
         order = Order.get_order_by_id(order_id)
 
         if order["email"] is None or order["shipping_information"] is None :
-            return 0
+            return {"code":0, "data" : None}
         
         if order["paid"] :
-            return 1
+            return {"code":1, "data" : None}
         
         credit_card = post_data['credit_card']
         if not credit_card['number'] or not credit_card['expiration_year'] or not credit_card['cvv'] or not credit_card['name'] or not credit_card['expiration_month']:
             # Missing fields
-            return 2
+            return {"code":2, "data" : None}
 
         amount_charged = order["total_price"] + order["shipping_price"]
         amount_charged = float(amount_charged)
@@ -106,7 +106,7 @@ class OrderProductsServices(object) :
         response = OrderProductsServices.api_payment("http://dimprojetu.uqac.ca/~jgnault/shops/pay/",data)
 
         if response.status_code != 200 :
-            return response
+            return {"code":3, "data" : response}
         
         body_response = response.text
         body_response = json.loads(body_response)
@@ -131,4 +131,4 @@ class OrderProductsServices(object) :
         Order.update(transaction=transaction).where(id == order_id).execute()
         Order.update(paid=True).where(id == order_id).execute()
 
-        return Order.get_order_by_id(order_id)
+        return {"code":4, "data" : None}
