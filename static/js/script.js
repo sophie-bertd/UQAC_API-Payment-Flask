@@ -19,6 +19,8 @@ $(document).ready(() => {
     }
 
     currentProductQuantity += 1;
+    product_id = $(this).closest(".col-md-4").find(".card").data("product-id");
+
     const $cardBody = $(this).closest(".card-body");
     const productName = $cardBody.find(".card-title").text();
     const productPrice = parseFloat(
