@@ -10,7 +10,7 @@ from orders_products import view
 from peewee import * 
 
 def create_app(initial_config=None):
-    app = Flask("orders_products", instance_relative_config=True, template_folder='../templates', static_folder='../static')
+    app = Flask("orders_products", instance_relative_config=True)
     app.config['DATABASE'] = os.path.join(app.instance_path, 'database.sqlite')
 
     if initial_config != None:
@@ -52,8 +52,7 @@ def create_app(initial_config=None):
         list_products = {
             "products": list_products
         }
-        # return jsonify(list_products)
-        return view.index()
+        return jsonify(list_products)
     
     @app.route('/order/<int:order_id>', methods=['GET'])
     def get_order(order_id):
