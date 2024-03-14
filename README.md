@@ -6,6 +6,13 @@ Le projet consiste à développer une application Web responsable de prendre des
 
 ##
 
+### Équipe
+
+- [Nolwenn TREUST - TREN21620200]()
+- [Sophie BERTRAND - BERS15580400]()
+
+##
+
 ```
 .
 ├── README.md
