@@ -10,7 +10,7 @@ from orders_products import view
 from peewee import * 
 
 def create_app(initial_config=None):
-    app = Flask("orders_products", instance_relative_config=True, template_folder='../templates', static_folder='../static')
+    app = Flask("orders_products", instance_relative_config=True, template_folder="../templates", static_folder="../static")
     app.config['DATABASE'] = os.path.join(app.instance_path, 'database.sqlite')
 
     if initial_config != None:
