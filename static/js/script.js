@@ -19,31 +19,18 @@ $(document).ready(() => {
     }
 
     currentProductQuantity += 1;
-    product_id = $(this).closest(".col-md-4").find(".card").data("product-id");
-
-    const productName = $(this).siblings(".card-title").text();
+    const $cardBody = $(this).closest(".card-body");
+    const productName = $cardBody.find(".card-title").text();
     const productPrice = parseFloat(
-      $(this).siblings(".card-text").first().text().replace("$", "")
+      $cardBody.find(".card-text").eq(0).text().replace("$", "")
     );
-    const productQuantityText = $(this)
-      .siblings(".card-text")
+    const productQuantityText = $cardBody
+      .find(".card-text")
       .eq(1)
       .text()
       .trim();
-    const quantityRegex = /([\d.]+)\s*(kg|g)/i;
-    const matches = productQuantityText.match(quantityRegex);
-
-    let productQuantity = 0;
-    if (matches && matches.length === 3) {
-      productQuantity = parseFloat(matches[1]);
-      const quantityUnit = matches[2].toLowerCase();
-      if (quantityUnit === "g") {
-        productQuantity /= 1000;
-      }
-    } else {
-      console.error("Quantity format not recognized for product:", productName);
-      return;
-    }
+    const productWeight =
+      parseFloat(productQuantityText.split("g")[0].trim()) / 1000;
 
     const existingItem = $("#cartSidebar .list-group").find(
       `li[data-product="${productName}"]`
@@ -51,21 +38,21 @@ $(document).ready(() => {
 
     if (existingItem.length > 0) {
       const currentQuantity = parseFloat(existingItem.attr("data-quantity"));
-      existingItem.attr("data-quantity", currentQuantity + productQuantity);
+      existingItem.attr("data-quantity", currentQuantity + productWeight);
       existingItem.html(
-        `${productName} - ${productPrice.toFixed(2)} /kg - ${(
-          currentQuantity + productQuantity
+        `${productName} - $${productPrice.toFixed(2)} /kg - ${(
+          currentQuantity + productWeight
         ).toFixed(3)} kg (Quantité: ${currentProductQuantity})`
       );
     } else {
       $("#cartSidebar .list-group").append(
-        `<li class="list-group-item" data-product="${productName}" data-quantity="${productQuantity}">
-            ${productName} - ${productPrice.toFixed(
+        `<li class="list-group-item" data-product="${productName}" data-quantity="${productWeight}">
+                ${productName} - $${productPrice.toFixed(
           2
-        )} /kg - ${productQuantity.toFixed(
+        )} /kg - ${productWeight.toFixed(
           3
         )} kg (Quantité: ${currentProductQuantity})
-          </li>`
+            </li>`
       );
     }
 
@@ -78,7 +65,7 @@ $(document).ready(() => {
       const price = parseFloat(
         $(this).text().split(" - ")[1].replace("$", "").split(" ")[0]
       );
-      const quantity = parseFloat($(this).attr("data-quantity"));
+      // const quantity = parseFloat($(this).attr("data-quantity"));
       // total += price * quantity;
       total += price * currentProductQuantity;
     });
