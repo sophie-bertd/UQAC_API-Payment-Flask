@@ -1,20 +1,37 @@
 from peewee import *
 import os 
 import requests
+import html
 
 def get_db():
-    database_path = os.path.join("instance", "database.sqlite")
-    return SqliteDatabase(database_path)
+    # database_path = os.path.join("instance", "database.sqlite")
+    db_name = os.environ.get("DB_NAME")
+    db_host = os.environ.get("DB_HOST")
+    db_port = os.environ.get("DB_PORT")
+    db_user = os.environ.get("DB_USER")
+    db_password = os.environ.get("DB_PASSWORD")
+    return PostgresqlDatabase(db_name, user=db_user, password=db_password, host=db_host, port=db_port)
  
 def close_db():
     db = get_db()
     db.close()
 
+def remove_null_characters(data):
+    return data.replace('\x00', '')
+
 def init_db() : 
-    if os.path.exists("instance/database.sqlite"):
-        os.remove("instance/database.sqlite")
+    # if os.path.exists("instance/database.sqlite"):
+    #     os.remove("instance/database.sqlite")
+
     with get_db() as db:
-        db.create_tables([Product, ShippingInformation, CreditCard, Transaction, Order])
+        db.create_tables([Product, ShippingInformation, CreditCard, Transaction, Order, OrderProduct, ErrorTransaction])
+        Product.delete().execute()
+        OrderProduct.delete().execute()
+        Order.delete().execute()
+        ErrorTransaction.delete().execute()
+        Transaction.delete().execute()
+        ShippingInformation.delete().execute()
+        CreditCard.delete().execute()
 
         url = "http://dimprojetu.uqac.ca/~jgnault/shops/products/"
         response = requests.get(url)
@@ -23,13 +40,13 @@ def init_db() :
         products = data['products']
         for product in products:
             product_save = Product.create(
-                name=product['name'],
-                description=product['description'],
+                name=remove_null_characters(product['name']),
+                description=remove_null_characters(product['description']),
                 price=product['price'],
                 in_stock=product['in_stock'],
                 id=product['id'],
                 weight=product['weight'],
-                image=product['image']
+                image=remove_null_characters(product['image'])
             )
             product_save.save()
 
@@ -91,9 +108,18 @@ class CreditCard(Model):
         database = get_db()
 
 class Transaction(Model):
+    # id = CharField(primary_key=True)
     id = CharField(primary_key=True)
     success = BooleanField()
     amount_charged = DecimalField()
+
+    class Meta:
+        database = get_db()
+
+class ErrorTransaction(Model) :
+    transaction = ForeignKeyField(Transaction, backref='error_transactions')
+    code = CharField()
+    name = CharField()
 
     class Meta:
         database = get_db()
@@ -104,10 +130,10 @@ class Order(Model):
     email = CharField(null=True)
     paid = BooleanField(default=False)
     shipping_price = DecimalField()
-    product_id = ForeignKeyField(Product, backref='orders')
-    quantity = IntegerField(
-        constraints=[Check('quantity > 0')]
-    )
+    # product_id = ForeignKeyField(Product, backref='orders')
+    # quantity = IntegerField(
+    #     constraints=[Check('quantity > 0')]
+    # )
     shipping_information = ForeignKeyField(ShippingInformation, backref='orders', null=True)
     credit_card = ForeignKeyField(CreditCard, backref='orders', null=True)
     transaction = ForeignKeyField(Transaction, backref='orders', null=True)
@@ -145,13 +171,37 @@ class Order(Model):
             credit_card = None
 
         if order.transaction is not None:
-            transaction = {
-                "id": order.transaction.id,
-                "success": order.transaction.success,
-                "amount_charged": order.transaction.amount_charged
-            }
+            error_transactions = None
+            error = order.transaction.error_transactions.first()
+
+            if error :
+                error_transactions = {
+                        "code": error.code,
+                        "name": html.unescape(error.name)
+                    }
+               
+                transaction = {
+                    "success": order.transaction.success,
+                    "error": error_transactions,
+                    "amount_charged": order.transaction.amount_charged
+                }
+            else : 
+                transaction = {
+                    "success": order.transaction.success,
+                    "amount_charged": order.transaction.amount_charged
+                }
+        
         else:
             transaction = None
+
+        products = [] 
+        for order_product in order.order_products:
+            products.append(
+                {
+                    "id": order_product.product_id,
+                    "quantity": order_product.quantity
+                }
+            )
 
         order =  {
                     "id": order.id,
@@ -161,12 +211,16 @@ class Order(Model):
                     "shipping_information": shipping_information,
                     "paid": order.paid,
                     "transaction": transaction,
-                    "product": 
-                        {
-                            "id": order.product_id.id,
-                            "quantity": order.quantity,
-                        }, 
+                    "products": products,
                     "shipping_price": order.shipping_price
                 }
         
         return order
+
+class OrderProduct(Model):
+    order = ForeignKeyField(Order, backref='order_products')
+    product_id = IntegerField()
+    quantity = IntegerField(constraints=[Check('quantity > 0')])
+
+    class Meta:
+        database = get_db()

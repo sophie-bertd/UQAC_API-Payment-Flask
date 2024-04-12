@@ -8,6 +8,7 @@ from orders_products import view
 
 from peewee import * 
 import json
+import redis 
 
 def create_app(initial_config=None):
     app = Flask("orders_products", instance_relative_config=True, template_folder="../templates", static_folder="../static")
@@ -22,6 +23,10 @@ def create_app(initial_config=None):
         pass
 
     get_db()
+
+    redis_url = os.environ.get("REDIS_URL") 
+    redis_conn = redis.Redis.from_url(redis_url)
+
     register_cli_commands(app)
 
     @app.before_request
@@ -57,6 +62,12 @@ def create_app(initial_config=None):
     
     @app.route('/order/<int:order_id>', methods=['GET'])
     def get_order(order_id):
+        cache_key = f"order_{order_id}"
+        cached_order = redis_conn.get(cache_key)
+
+        if cached_order:
+            return json.loads(cached_order)
+
         order = Order.get_order_by_id(order_id)
         if not order:
             return {"error": 
@@ -181,10 +192,10 @@ def create_app(initial_config=None):
                         }
                 }, 422
             
-            if res["code"] == 3:  
-                response = res["data"].text 
-                response = json.loads(response)
-                return response , res["data"].status_code
+            # elif res["code"] == 3:  
+            #     response = res["data"].text 
+            #     response = json.loads(response)
+            #     return response , res["data"].status_code
             
             return jsonify(success=True)
         
