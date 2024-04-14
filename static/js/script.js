@@ -12,6 +12,83 @@ $(document).ready(() => {
     $("#cartSidebar").removeClass("open");
   });
 
+  $("#orderToggle").click(function () {
+    $("#orderModal").modal("show");
+  });
+
+  $("#orderButton").click(function () {
+    let orderId = $("#orderInput").val();
+
+    $.ajax({
+      url: `/order/${orderId}`,
+      type: "GET",
+      success: (response) => {
+        $("#orderModal").modal("hide");
+        $("#orderInfoModal").modal("show");
+
+        $("#shippingCountry").text(response.order.shipping_information.country);
+        $("#shippingAddress").text(response.order.shipping_information.address);
+        $("#shippingCity").text(response.order.shipping_information.city);
+        $("#shippingProvince").text(
+          response.order.shipping_information.province
+        );
+        $("#shippingPostalCode").text(
+          response.order.shipping_information.postal_code
+        );
+        $("#email").text(response.order.email);
+        $("#totalPrice").text(
+          "$" + (response.order.total_price / 100).toFixed(2)
+        );
+        $("#paid").text(response.order.paid ? "Yes" : "No");
+
+        let productsHtml = "";
+        response.order.products.forEach((product) => {
+          productsHtml += `<li>Product ID: ${product.id}, Quantity: ${product.quantity}</li>`;
+        });
+        $("#products").html(productsHtml);
+
+        $("#ccName").text(response.order.credit_card.name);
+        $("#ccFirstDigits").text(response.order.credit_card.first_digits);
+        $("#ccLastDigits").text(response.order.credit_card.last_digits);
+        $("#ccExpiration").text(
+          `${response.order.credit_card.expiration_month}/${response.order.credit_card.expiration_year}`
+        );
+
+        $("#transactionId").text(response.order.transaction.id);
+        $("#transactionSuccess").text(
+          response.order.transaction.success ? "Yes" : "No"
+        );
+        $("#amountCharged").text(
+          "$" + (response.order.transaction.amount_charged / 100).toFixed(2)
+        );
+
+        $("#shippingPrice").text(
+          "$" + (response.order.shipping_price / 100).toFixed(2)
+        );
+        $("#orderId").text(response.order.id);
+      },
+      error: (xhr, status, error) => {
+        console.error(error);
+      },
+    });
+  });
+
+  $("#orderBtn").click(function () {
+    let email = $("#emailInput").val();
+    let country = $("#countryInput").val();
+    let address = $("#addressInput").val();
+    let postalCode = $("#postalCodeInput").val();
+    let city = $("#cityInput").val();
+    let province = $("#provinceInput").val();
+
+    $("#shippingEmail").text(email);
+    $("#shippingCountry").text(country);
+    $("#shippingAddress").text(address);
+    $("#shippingPostalCode").text(postalCode);
+    $("#shippingCity").text(city);
+    $("#shippingProvince").text(province);
+  });
+
   $(".addToCart").click(function () {
     if (!isFirstProductAdded) {
       $(".addToCart").not(this).prop("disabled", true);

@@ -30,6 +30,10 @@
                         <a class="nav-link" href="#"><button class="btn btn-info" id="cartToggle"><i
                                     class="fas fa-shopping-cart"></i></button></a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><button class="btn btn-info" id="orderToggle"><i
+                                    class="fas fa-shopping-cart"></i></button></a>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -69,6 +73,80 @@
         </ul>
         <div class="text-center mt-3">
             <button class="btn btn-primary" id="checkoutButton">Payment</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderModalLabel">Search my order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" placeholder="OrderID" class="form-control mb-2" id="orderInput">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="orderBtn">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="orderInfoModal" tabindex="-1" role="dialog" aria-labelledby="orderInfoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderInfoModalLabel">Search my order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5>Order Details</h5>
+                    <ul>
+                        <li><strong>Shipping Information:</strong>
+                            <ul>
+                                <li><strong>Country: </strong></li>
+                                <li><strong>Address: </strong></li>
+                            </ul>
+                        </li>
+                        <li><strong>Email: </strong></li>
+                        <li><strong>Total Price: </strong></li>
+                        <li><strong>Paid: </strong></li>
+                        <li><strong>Products: </strong>
+                            <ul>
+                            </ul>
+                        </li>
+                        <li><strong>Credit Card:</strong>
+                            <ul>
+                                <li><strong>Name: </strong></li>
+                                <li><strong>First Digits: </strong></li>
+                                <li><strong>Last Digits: </strong></li>
+                                <li><strong>Expiration: </strong></li>
+                            </ul>
+                        </li>
+                        <li><strong>Transaction:</strong>
+                            <ul>
+                                <li><strong>Transaction ID: </strong></li>
+                                <li><strong>Transaction Success: </strong></li>
+                                <li><strong>Amount Charged: </strong></li>
+                                <li><strong>Shipping Price: </strong></li>
+                                <li><strong>Order ID: </strong></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="placeOrderBtn">Ok</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -139,7 +217,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userInfoModalLabel">Order success</h5>
+                    <h5 class="modal-title" id="orderPlacedModalTrueLabel">Order success</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -159,7 +237,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userInfoModalLabel">Order failed</h5>
+                    <h5 class="modal-title" id="orderPlacedModalFalseLabel">Order failed</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

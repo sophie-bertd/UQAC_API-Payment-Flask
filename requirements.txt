@@ -1,0 +1,6 @@
+flask==3.0.2
+requests==2.26.0
+peewee==3.17
+psycopg2==2.9.9
+redis==5.0.3
+rq==1.16.1

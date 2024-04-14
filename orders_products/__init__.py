@@ -8,7 +8,10 @@ from orders_products import view
 
 from peewee import * 
 import json
-import redis 
+import redis
+
+from rq import Queue
+from orders_products.payment_task import process_payment
 
 def create_app(initial_config=None):
     app = Flask("orders_products", instance_relative_config=True, template_folder="../templates", static_folder="../static")
@@ -26,6 +29,8 @@ def create_app(initial_config=None):
 
     redis_url = os.environ.get("REDIS_URL") 
     redis_conn = redis.Redis.from_url(redis_url)
+
+    queue = Queue(connection=redis_conn)
 
     register_cli_commands(app)
 
@@ -130,6 +135,7 @@ def create_app(initial_config=None):
                     }, 404
         
         body = request.get_json()
+        
         if body.keys() == {"order"} : 
             body = body["order"]
             if body.keys() != {"shipping_information", "email"} :
@@ -160,7 +166,8 @@ def create_app(initial_config=None):
         
         elif body.keys() == {"credit_card"} :
 
-            res = OrderProductsServices.payment_order_to_api(order_id, body)
+            # res = OrderProductsServices.payment_order_to_api(order_id, body)
+            res = queue.enqueue(process_payment, order_id, body)
 
             if res["code"] == 0:
                 return {
