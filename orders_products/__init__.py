@@ -166,8 +166,8 @@ def create_app(initial_config=None):
         
         elif body.keys() == {"credit_card"} :
 
-            # res = OrderProductsServices.payment_order_to_api(order_id, body)
-            res = queue.enqueue(process_payment, order_id, body)
+            res = OrderProductsServices.payment_order_to_api(order_id, body)
+            # res = queue.enqueue(process_payment, order_id, body)
 
             if res["code"] == 0:
                 return {

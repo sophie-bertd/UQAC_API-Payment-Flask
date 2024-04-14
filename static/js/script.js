@@ -1,8 +1,8 @@
 $(document).ready(() => {
   let isFirstProductAdded = false;
   let order_id = null;
-  let product_id = null;
-  let currentProductQuantity = 0;
+  let products_id = [];
+  let currentProductQuantity = null;
 
   $("#cartToggle").click(function () {
     $("#cartSidebar").toggleClass("open");
@@ -16,7 +16,7 @@ $(document).ready(() => {
     $("#orderModal").modal("show");
   });
 
-  $("#orderButton").click(function () {
+  $("#orderBtn").click(function () {
     let orderId = $("#orderInput").val();
 
     $.ajax({
@@ -26,51 +26,50 @@ $(document).ready(() => {
         $("#orderModal").modal("hide");
         $("#orderInfoModal").modal("show");
 
-        $("#shippingCountry").text(response.order.shipping_information.country);
-        $("#shippingAddress").text(response.order.shipping_information.address);
-        $("#shippingCity").text(response.order.shipping_information.city);
-        $("#shippingProvince").text(
-          response.order.shipping_information.province
-        );
+        $("#shippingCountry").text(response.shipping_information.country);
+        $("#shippingAddress").text(response.shipping_information.address);
+        $("#shippingCity").text(response.shipping_information.city);
+        $("#shippingProvince").text(response.shipping_information.province);
         $("#shippingPostalCode").text(
-          response.order.shipping_information.postal_code
+          response.shipping_information.postal_code
         );
-        $("#email").text(response.order.email);
-        $("#totalPrice").text(
-          "$" + (response.order.total_price / 100).toFixed(2)
-        );
-        $("#paid").text(response.order.paid ? "Yes" : "No");
+        $("#email").text(response.email);
+        $("#totalPrice").text("$" + (response.total_price / 1).toFixed(2));
+        $("#paid").text(response.paid ? "Yes" : "No");
 
         let productsHtml = "";
-        response.order.products.forEach((product) => {
+        response.products.forEach((product) => {
           productsHtml += `<li>Product ID: ${product.id}, Quantity: ${product.quantity}</li>`;
         });
-        $("#products").html(productsHtml);
+        $("#productsOrder").html(productsHtml);
 
-        $("#ccName").text(response.order.credit_card.name);
-        $("#ccFirstDigits").text(response.order.credit_card.first_digits);
-        $("#ccLastDigits").text(response.order.credit_card.last_digits);
+        $("#ccName").text(response.credit_card.name);
+        $("#ccFirstDigits").text(response.credit_card.number.slice(0, 4));
+        $("#ccLastDigits").text(response.credit_card.number.slice(-4));
         $("#ccExpiration").text(
-          `${response.order.credit_card.expiration_month}/${response.order.credit_card.expiration_year}`
+          `${response.credit_card.expiration_month}/${response.credit_card.expiration_year}`
         );
 
-        $("#transactionId").text(response.order.transaction.id);
         $("#transactionSuccess").text(
-          response.order.transaction.success ? "Yes" : "No"
+          response.transaction.success ? "Yes" : "No"
         );
         $("#amountCharged").text(
-          "$" + (response.order.transaction.amount_charged / 100).toFixed(2)
+          "$" + (response.transaction.amount_charged / 1).toFixed(2)
         );
 
         $("#shippingPrice").text(
-          "$" + (response.order.shipping_price / 100).toFixed(2)
+          "$" + (response.shipping_price / 1).toFixed(2)
         );
-        $("#orderId").text(response.order.id);
+        $("#orderId").text(response.id);
       },
       error: (xhr, status, error) => {
         console.error(error);
       },
     });
+  });
+
+  $("#orderInfoBtn").click(function () {
+    $("#orderInfoModal").modal("hide");
   });
 
   $("#orderBtn").click(function () {
@@ -90,13 +89,22 @@ $(document).ready(() => {
   });
 
   $(".addToCart").click(function () {
-    if (!isFirstProductAdded) {
-      $(".addToCart").not(this).prop("disabled", true);
-      isFirstProductAdded = true;
+    // if (!isFirstProductAdded) {
+    //   $(".addToCart").not(this).prop("disabled", true);
+    //   isFirstProductAdded = true;
+    // }
+
+    product = $(this).closest(".col-md-4").find(".card").data("product-id");
+
+    if (products_id.find((element) => element.id === product)) {
+      products_id.find((element) => element.id === product).quantity += 1;
+    } else {
+      products_id.push({ id: product, quantity: 1 });
     }
 
-    currentProductQuantity += 1;
-    product_id = $(this).closest(".col-md-4").find(".card").data("product-id");
+    currentProductQuantity = products_id.find(
+      (element) => element.id === product
+    ).quantity;
 
     const $cardBody = $(this).closest(".card-body");
     const productName = $cardBody.find(".card-title").text();
@@ -159,10 +167,7 @@ $(document).ready(() => {
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify({
-        product: {
-          id: product_id,
-          quantity: currentProductQuantity,
-        },
+        products: products_id,
       }),
       success: (response) => {
         order_id = response.id;
