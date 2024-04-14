@@ -1,4 +1,5 @@
 import os 
+import time
 
 from flask import Flask, request, redirect, url_for, jsonify, abort
 
@@ -11,7 +12,7 @@ import json
 import redis
 
 from rq import Queue
-from orders_products.payment_task import process_payment
+from rq import Callback
 
 def create_app(initial_config=None):
     app = Flask("orders_products", instance_relative_config=True, template_folder="../templates", static_folder="../static")
@@ -166,8 +167,14 @@ def create_app(initial_config=None):
         
         elif body.keys() == {"credit_card"} :
 
-            res = OrderProductsServices.payment_order_to_api(order_id, body)
-            # res = queue.enqueue(process_payment, order_id, body)
+            # res = OrderProductsServices.payment_order_to_api(order_id, body)
+            job = queue.enqueue(OrderProductsServices.payment_order_to_api, order_id, body)
+
+            while job.result is None:
+                time.sleep(1)
+                job.refresh()
+
+            res = job.result
 
             if res["code"] == 0:
                 return {
