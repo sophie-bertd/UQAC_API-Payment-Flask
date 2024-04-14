@@ -5,12 +5,14 @@ RUN apk update \
 
 ENV FLASK_DEBUG=True
 ENV FLASK_APP=inf349
-ENV REDIS_URL=redis://redis-container:6379
-ENV DB_HOST=host.docker.internal
+ENV REDIS_URL=redis://redis-container
+ENV DB_HOST=postgres-container
 ENV DB_USER=user
 ENV DB_PASSWORD=pass
 ENV DB_PORT=5432
 ENV DB_NAME=api8inf349
+ENV NO_PROXY=*
+ENV OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 # WORKDIR /inf349
 
@@ -23,8 +25,8 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-RUN flask init-db
+# RUN flask init-db
 
 EXPOSE 5000
 
-CMD [ "flask", "run", "--host=0.0.0.0" ]
+CMD [ "flask", "run" ]
