@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  postgres-container:
+    container_name: postgres-container
+    image: postgres:16.2-alpine3.18
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=api8inf349
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    networks:
+      - app-network
+  redis-container:
+    container_name: redis-container
+    image: redis:7.2.4-alpine3.19
+    restart: always
+    ports:
+      - "6379:6379"
+    depends_on:
+      - postgres-container
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  pgdata:
