@@ -44,7 +44,8 @@ Le projet consiste à développer une application Web responsable de prendre des
 │   ├── __init__.py
 │   ├── models.py
 │   ├── services.py
-│   └── view.py
+│   ├── view.py
+│   └── payment_tasks.py   
 ├── static
 │   ├── css
 │   │   └── style.css
@@ -58,7 +59,7 @@ Le projet consiste à développer une application Web responsable de prendre des
     ├── test_integration.py
     └── test_unit.py
 
-10 directories, 33 files
+10 directories, 34 files
 ```
 
 ##
@@ -71,6 +72,10 @@ Le projet consiste à développer une application Web responsable de prendre des
 - pytest 8.1.1
 - pytest-cov 4.1.0
 - selenium 4.1.0
+- requests 2.26.0
+- redis 5.0.3
+- rq 1.16.1
+- psycopg2 2.9.9
 
 Utilisation de la librairie _requests_ à la place de _urllib_ pour l'API.
 
@@ -88,6 +93,36 @@ Lancement du serveur Flask
 
 ```bash
 FLASK_DEBUG=True FLASK_APP=inf349 flask run
+```
+
+Docker : 
+
+```bash
+docker compose up -d 
+```
+
+Construction de l'image Docker :
+
+```bash
+docker compose build -t api8inf349 .
+```
+
+Lancement de l'image Docker :
+
+```bash
+docker run --network=uqac_api_app-network api8inf349:latest 
+```
+
+Dans un autre terminal, initialisation de la base de données :
+
+```bash
+docker exec -it <container_id> flask init-db
+```
+
+Lancement du worker Redis :
+
+```bash
+docker exec -it <container_id> rq worker
 ```
 
 ##

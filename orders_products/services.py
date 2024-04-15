@@ -90,8 +90,8 @@ class OrderProductsServices(object) :
         )
         shipping_info.save()
 
-        Order.update(email=post_data['email']).where(id == order_id).execute()
-        Order.update(shipping_information=shipping_info).where(id == order_id).execute()
+        Order.update(email=post_data['email']).where(Order.id == order_id).execute()
+        Order.update(shipping_information=shipping_info).where(Order.id == order_id).execute()
 
         return Order.get_order_by_id(order_id)
     
@@ -151,7 +151,7 @@ class OrderProductsServices(object) :
             )
             error_transaction.save()
 
-            Order.update(transaction=transaction).where(id == order_id).execute()
+            Order.update(transaction=transaction).where(Order.id == order_id).execute()
 
             return {"code":4, "data" : None}
 
@@ -174,9 +174,9 @@ class OrderProductsServices(object) :
         )
         credit_card.save()
 
-        Order.update(credit_card=credit_card).where(id == order_id).execute()
-        Order.update(transaction=transaction).where(id == order_id).execute()
-        Order.update(paid=True).where(id == order_id).execute()
+        Order.update(credit_card=credit_card).where(Order.id == order_id).execute()
+        Order.update(transaction=transaction).where(Order.id == order_id).execute()
+        Order.update(paid=True).where(Order.id == order_id).execute()
 
         redis_url = os.environ.get('REDIS_URL')
         redis_conn = redis.Redis.from_url(redis_url)

@@ -72,6 +72,7 @@ def create_app(initial_config=None):
         cached_order = redis_conn.get(cache_key)
 
         if cached_order:
+            print("Cache hit")
             return json.loads(cached_order)
 
         order = Order.get_order_by_id(order_id)
