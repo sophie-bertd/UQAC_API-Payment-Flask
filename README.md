@@ -8,26 +8,16 @@ Le projet consiste à développer une application Web responsable de prendre des
 
 ### Équipe
 
-- [Nolwenn TREUST - TREN21620200]()
-- [Sophie BERTRAND - BERS15580400]()
+- [Nolwenn TREUST]()
+- [Sophie BERTRAND]()
 
 ##
 
 ```
 .
+├── Dockerfile
 ├── README.md
-├── htmlcov
-│   ├── coverage_html.js
-│   ├── d_869ccebe1c6d09d3___init___py.html
-│   ├── d_869ccebe1c6d09d3_models_py.html
-│   ├── d_869ccebe1c6d09d3_services_py.html
-│   ├── d_869ccebe1c6d09d3_view_py.html
-│   ├── favicon_32.png
-│   ├── index.html
-│   ├── keybd_closed.png
-│   ├── keybd_open.png
-│   ├── status.json
-│   └── style.css
+├── docker-compose.yml
 ├── img
 │   ├── cart_empty.png
 │   ├── cart_fill.png
@@ -38,14 +28,13 @@ Le projet consiste à développer une application Web responsable de prendre des
 │   ├── shipping.png
 │   └── test_cov.png
 ├── inf349.py
-├── instance
-│   └── database.sqlite
 ├── orders_products
 │   ├── __init__.py
 │   ├── models.py
 │   ├── services.py
-│   ├── view.py
-│   └── payment_tasks.py   
+│   └── view.py
+├── postgresql.conf
+├── requirements.txt
 ├── static
 │   ├── css
 │   │   └── style.css
@@ -59,7 +48,7 @@ Le projet consiste à développer une application Web responsable de prendre des
     ├── test_integration.py
     └── test_unit.py
 
-10 directories, 34 files
+8 directories, 25 files
 ```
 
 ##
@@ -83,60 +72,40 @@ Utilisation de la librairie _requests_ à la place de _urllib_ pour l'API.
 
 ### Démarrer le projet
 
-Initialisation de la base données:
+Lancement des services du docker-compose
 
 ```bash
-FLASK_DEBUG=True FLASK_APP=inf349 flask init-db
+docker compose up -d
 ```
 
-Lancement du serveur Flask
-
-```bash
-FLASK_DEBUG=True FLASK_APP=inf349 flask run
-```
-
-Docker : 
-
-```bash
-docker compose up -d 
-```
-
-Construction de l'image Docker :
+Construction de l'image Docker de l'application
 
 ```bash
 docker compose build -t api8inf349 .
 ```
 
-Lancement de l'image Docker :
+Lancement de l'image Docker de l'application
 
 ```bash
-docker run --network=uqac_api_app-network api8inf349:latest 
+docker run --network=uqac_api_app-network api8inf349:latest -d
 ```
 
-Dans un autre terminal, initialisation de la base de données :
+Initialisation de la base de données
 
 ```bash
-docker exec -it <container_id> flask init-db
+docker exec -it <api8inf349_container_id> flask init-db
 ```
 
-Lancement du worker Redis :
+Lancement du worker Redis
 
 ```bash
-docker exec -it <container_id> rq worker
+docker exec -it <api8inf349_container_id> rq worker
 ```
 
-##
+Accès à l'application
 
-### Tests
-
-```bash
-python -m pytest --cov=orders_products
 ```
-
-ou
-
-```bash
-python -m pytest --cov-report=html --cov=orders_products
+http://locahost:5000
 ```
 
 ##
@@ -158,3 +127,9 @@ python -m pytest --cov-report=html --cov=orders_products
 ![alt text](./img/order_success.png)
 
 ![alt text](./img/order_failed.png)
+
+![alt text](./img/search_order.png)
+
+![alt text](./img/order_paid.png)
+
+![alt text](./img/order_not_paid.png)
