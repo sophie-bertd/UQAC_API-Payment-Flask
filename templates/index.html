@@ -87,7 +87,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" placeholder="OrderID" class="form-control mb-2" id="orderInput">
+                    <input type="text" placeholder="Order ID" class="form-control mb-2" id="orderInput">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -144,26 +144,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="orderInfoBtn">Ok</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="orderInfoModalFalse" tabindex="-1" role="dialog" aria-labelledby="orderInfoModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="orderInfoModalLabel">Search failed</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Your order could not be found</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -231,38 +211,17 @@
         </div>
     </div>
 
-    <div class="modal fade" id="orderPlacedModalTrue" tabindex="-1" role="dialog"
-        aria-labelledby="orderPlacedModalTrueLabel" aria-hidden="true">
+    <div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="orderPlacedModalTrueLabel">Order success</h5>
+                    <h5 class="modal-title" id="resultModalTitle">Modal Title</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <p>Your order was sent successfully</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="orderPlacedModalFalse" tabindex="-1" role="dialog"
-        aria-labelledby="orderPlacedModalFalseLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="orderPlacedModalFalseLabel">Order failed</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Your order could not be sent</p>
+                <div class="modal-body" id="resultModalBody">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

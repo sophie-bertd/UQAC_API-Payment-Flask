@@ -67,7 +67,14 @@ $(document).ready(() => {
 
         $("#orderModal").modal("hide");
         $("#orderInfoModal").modal("hide");
-        $("#orderInfoModalFalse").modal("show");
+        // $("#orderInfoModalFalse").modal("show");
+
+        $("#resultModal").modal("show");
+        $("#resultModalTitle").text("Order not found");
+        $("#resultModalBody").text(`The order ID you entered does not exist`);
+      },
+      complete: () => {
+        $("#orderInput").val("");
       },
     });
   });
@@ -207,13 +214,18 @@ $(document).ready(() => {
       error: (xhr, status, error) => {
         console.error(error);
       },
+      complete: () => {
+        $("#emailInput").val("");
+        $("#countryInput").val("");
+        $("#addressInput").val("");
+        $("#postalCodeInput").val("");
+        $("#cityInput").val("");
+        $("#provinceInput").val("");
+      },
     });
   });
 
   $("#placeOrderBtn").click(function () {
-    $("#paymentModal").modal("hide");
-    $("#orderPlacedModal").modal("show");
-
     $.ajax({
       url: `/order/${order_id}`,
       type: "PUT",
@@ -229,13 +241,19 @@ $(document).ready(() => {
       }),
       success: (response) => {
         $("#paymentModal").modal("hide");
-        $("#orderPlacedModalTrue").modal("show");
+
+        $("#resultModal").modal("show");
+        $("#resultModalTitle").text("Order sucess");
+        $("#resultModalBody").text(`Your order was placed successfully`);
 
         console.log("Order placed with id:", order_id);
       },
       error: (xhr, status, error) => {
         $("#paymentModal").modal("hide");
-        $("#orderPlacedModalFalse").modal("show");
+
+        $("#resultModal").modal("show");
+        $("#resultModalTitle").text("Order failed");
+        $("#resultModalBody").text(`Your order could not be placed`);
 
         console.error(error);
         console.log(error.responseJSON.error);
@@ -247,6 +265,12 @@ $(document).ready(() => {
         updateCartTotal();
 
         $("#cartSidebar .list-group").empty();
+
+        $("#creditCardName").val("");
+        $("#creditCardNumber").val("");
+        $("#creditCardYear").val("");
+        $("#creditCardMonth").val("");
+        $("#cvv").val("");
       },
     });
   });
