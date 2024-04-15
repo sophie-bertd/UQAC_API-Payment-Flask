@@ -43,12 +43,23 @@ $(document).ready(() => {
         });
         $("#productsInfo").html(productsHtml);
 
-        $("#ccNameInfo").text(response.credit_card.name);
-        $("#ccFirstDigitsInfo").text(response.credit_card.number.slice(0, 4));
-        $("#ccLastDigitsInfo").text(response.credit_card.number.slice(-4));
-        $("#ccExpirationInfo").text(
-          `${response.credit_card.expiration_month}/${response.credit_card.expiration_year}`
-        );
+        if (response.paid === true) {
+          $("#ccNameInfo").text(response.credit_card.name);
+          $("#ccFirstDigitsInfo").text(response.credit_card.number.slice(0, 4));
+          $("#ccLastDigitsInfo").text(response.credit_card.number.slice(-4));
+          $("#ccExpirationInfo").text(
+            `${response.credit_card.expiration_month}/${response.credit_card.expiration_year}`
+          );
+
+          $("#transactionSuccessInfo").text(
+            response.transaction.success ? "Yes" : "No"
+          );
+        } else {
+          $("#ccNameInfo").text("n/a");
+          $("#ccFirstDigitsInfo").text("n/a");
+          $("#ccLastDigitsInfo").text("n/a");
+          $("#ccExpirationInfo").text("n/a");
+        }
 
         $("#transactionSuccessInfo").text(
           response.transaction.success ? "Yes" : "No"
@@ -67,7 +78,6 @@ $(document).ready(() => {
 
         $("#orderModal").modal("hide");
         $("#orderInfoModal").modal("hide");
-        // $("#orderInfoModalFalse").modal("show");
 
         $("#resultModal").modal("show");
         $("#resultModalTitle").text("Order not found");
@@ -89,7 +99,7 @@ $(document).ready(() => {
     //   isFirstProductAdded = true;
     // }
 
-    product = $(this).closest(".col-md-4").find(".card").data("product-id");
+    let product = $(this).closest(".col-md-4").find(".card").data("product-id");
 
     if (products_id.find((element) => element.id === product)) {
       products_id.find((element) => element.id === product).quantity += 1;
@@ -240,13 +250,30 @@ $(document).ready(() => {
         },
       }),
       success: (response) => {
-        $("#paymentModal").modal("hide");
+        $.ajax({
+          url: `/order/${order_id}`,
+          type: "GET",
+          success: (response) => {
+            if (response.paid === true) {
+              $("#paymentModal").modal("hide");
 
-        $("#resultModal").modal("show");
-        $("#resultModalTitle").text("Order sucess");
-        $("#resultModalBody").text(`Your order was placed successfully`);
+              $("#resultModal").modal("show");
+              $("#resultModalTitle").text("Order sucess");
+              $("#resultModalBody").text(`Your order was placed successfully`);
 
-        console.log("Order placed with id:", order_id);
+              console.log("Order placed with id:", order_id);
+            } else {
+              $("#paymentModal").modal("hide");
+
+              $("#resultModal").modal("show");
+              $("#resultModalTitle").text("Order failed");
+              $("#resultModalBody").text(`Your order could not be placed`);
+            }
+          },
+          error: (xhr, status, error) => {
+            console.error(error);
+          },
+        });
       },
       error: (xhr, status, error) => {
         $("#paymentModal").modal("hide");
