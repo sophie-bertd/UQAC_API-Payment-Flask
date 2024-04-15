@@ -1,5 +1,5 @@
 $(document).ready(() => {
-  let isFirstProductAdded = false;
+  // let isFirstProductAdded = false;
   let order_id = null;
   let products_id = [];
   let currentProductQuantity = null;
@@ -26,66 +26,54 @@ $(document).ready(() => {
         $("#orderModal").modal("hide");
         $("#orderInfoModal").modal("show");
 
-        $("#shippingCountry").text(response.shipping_information.country);
-        $("#shippingAddress").text(response.shipping_information.address);
-        $("#shippingCity").text(response.shipping_information.city);
-        $("#shippingProvince").text(response.shipping_information.province);
-        $("#shippingPostalCode").text(
+        $("#shippingCountryInfo").text(response.shipping_information.country);
+        $("#shippingAddressInfo").text(response.shipping_information.address);
+        $("#shippingCityInfo").text(response.shipping_information.city);
+        $("#shippingProvinceInfo").text(response.shipping_information.province);
+        $("#shippingPostalCodeInfo").text(
           response.shipping_information.postal_code
         );
-        $("#email").text(response.email);
-        $("#totalPrice").text("$" + (response.total_price / 1).toFixed(2));
-        $("#paid").text(response.paid ? "Yes" : "No");
+        $("#emailInfo").text(response.email);
+        $("#totalPriceInfo").text("$" + (response.total_price / 1).toFixed(2));
+        $("#paidInfo").text(response.paid ? "Yes" : "No");
 
         let productsHtml = "";
         response.products.forEach((product) => {
           productsHtml += `<li>Product ID: ${product.id}, Quantity: ${product.quantity}</li>`;
         });
-        $("#productsOrder").html(productsHtml);
+        $("#productsInfo").html(productsHtml);
 
-        $("#ccName").text(response.credit_card.name);
-        $("#ccFirstDigits").text(response.credit_card.number.slice(0, 4));
-        $("#ccLastDigits").text(response.credit_card.number.slice(-4));
-        $("#ccExpiration").text(
+        $("#ccNameInfo").text(response.credit_card.name);
+        $("#ccFirstDigitsInfo").text(response.credit_card.number.slice(0, 4));
+        $("#ccLastDigitsInfo").text(response.credit_card.number.slice(-4));
+        $("#ccExpirationInfo").text(
           `${response.credit_card.expiration_month}/${response.credit_card.expiration_year}`
         );
 
-        $("#transactionSuccess").text(
+        $("#transactionSuccessInfo").text(
           response.transaction.success ? "Yes" : "No"
         );
-        $("#amountCharged").text(
+        $("#amountChargedInfo").text(
           "$" + (response.transaction.amount_charged / 1).toFixed(2)
         );
 
-        $("#shippingPrice").text(
+        $("#shippingPriceInfo").text(
           "$" + (response.shipping_price / 1).toFixed(2)
         );
-        $("#orderId").text(response.id);
+        $("#orderIdInfo").text(response.id);
       },
       error: (xhr, status, error) => {
         console.error(error);
+
+        $("#orderModal").modal("hide");
+        $("#orderInfoModal").modal("hide");
+        $("#orderInfoModalFalse").modal("show");
       },
     });
   });
 
   $("#orderInfoBtn").click(function () {
     $("#orderInfoModal").modal("hide");
-  });
-
-  $("#orderBtn").click(function () {
-    let email = $("#emailInput").val();
-    let country = $("#countryInput").val();
-    let address = $("#addressInput").val();
-    let postalCode = $("#postalCodeInput").val();
-    let city = $("#cityInput").val();
-    let province = $("#provinceInput").val();
-
-    $("#shippingEmail").text(email);
-    $("#shippingCountry").text(country);
-    $("#shippingAddress").text(address);
-    $("#shippingPostalCode").text(postalCode);
-    $("#shippingCity").text(city);
-    $("#shippingProvince").text(province);
   });
 
   $(".addToCart").click(function () {
@@ -251,6 +239,14 @@ $(document).ready(() => {
 
         console.error(error);
         console.log(error.responseJSON.error);
+      },
+      complete: () => {
+        order_id = null;
+        products_id = [];
+        currentProductQuantity = null;
+        updateCartTotal();
+
+        $("#cartSidebar .list-group").empty();
       },
     });
   });
